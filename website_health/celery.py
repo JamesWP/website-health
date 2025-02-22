@@ -18,3 +18,11 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # discover and load tasks.py from from all registered Django apps
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
+@app.on_after_configure.connect
+def setup_periodic_tasks(sender: Celery, **kwargs):
+    # Calls check_websites every 30 seconds
+    sender.add_periodic_task(30.0, check_websites.s(), expires=10)
+
+@app.task
+def check_websites():
+    management.call_command('check_websites')
