@@ -1,5 +1,9 @@
+from datetime import timedelta
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+
+
 
 class StatusChoices(models.TextChoices):
     UP = "UP", ("Up")
@@ -16,6 +20,10 @@ class Website(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.url}"
+    
+    def is_up(self):
+        return self.status == "UP"
+
 
 
 class WebsiteStatusEvent(models.Model):
@@ -30,6 +38,29 @@ class WebsiteStatusEvent(models.Model):
     def __str__(self):
         return f"{self.website} changed from {self.old_status} to {self.new_status}"
 
+class StatusSubscription(models.Model):
+
+    website = models.ForeignKey(Website, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    offline_threshold = models.DurationField(default=timedelta(minutes=10))
+
+
+    def __str__(self):
+        return f"{self.user} subscribed to {self.website} with threshold {self.offline_threshold}"
+
+
+class StatusCheckerTask(models.Model):
+    last_run = models.DateTimeField(auto_now_add=True)
+
+
+class Notification(models.Model):
+    subscription = models.ForeignKey(StatusSubscription, on_delete=models.CASCADE)
+    event = models.ForeignKey(WebsiteStatusEvent, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Notification for {self.subscription} about event {self.event}"
+    
 
 def update_website_status(sender, instance, raw, using, update_fields, **kwargs):
     # get the previous instance of this website to compare statuses with it

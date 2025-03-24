@@ -23,6 +23,13 @@ def setup_periodic_tasks(sender: Celery, **kwargs):
     # Calls check_websites every 30 seconds
     sender.add_periodic_task(30.0, check_websites.s(), expires=10)
 
+    # Calls check_subscriptions every 30 seconds
+    sender.add_periodic_task(30.0, check_subscriptions.s(), expires=10)
+
 @app.task
 def check_websites():
     management.call_command('check_websites')
+
+@app.task
+def check_subscriptions():
+    management.call_command('check_subscriptions')
