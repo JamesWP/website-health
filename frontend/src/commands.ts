@@ -2,6 +2,8 @@ import { Terminal } from "@xterm/xterm";
 import color from 'ansicolor';
 import { error } from './console_utils';
 import { init} from './main';
+import { userCommand } from "./user_command";
+import { getToken } from "./api_client";
 
 type CommandSignature = [(term: Terminal, arg0: string, args: string[]) => Promise<number>, string];
 type CommandMap = { [key: string]: CommandSignature};
@@ -28,11 +30,23 @@ async function clear(term: Terminal, arg0: string, args: string[]): Promise<numb
 }
 
 async function login(term: Terminal, arg0: string, args: string[]): Promise<number> {
-    await new Promise<void>(resolve => setTimeout(resolve, 500));
-    term.writeln("logging in...");
+    term.write("username: ");
+    const username = await userCommand(term);
 
-    await new Promise<void>(resolve => setTimeout(resolve, 2500));
-    term.writeln("logged in");
+
+    term.write("password: ");
+    const password = await userCommand(term, { hideInput: true});
+
+    if (!password.user_entered || password.command == "") {
+        return -1;
+    }
+
+    term.writeln("Aquiring token...");
+
+    const token = await getToken(username.command, password.command);
+
+    term.writeln("Token acquired");
+
     return 0;
 }
 

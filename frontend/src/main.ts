@@ -7,7 +7,7 @@ import { split } from 'shlex';
 import colors from 'ansicolor'
 import { dispatch } from './commands';
 import { error } from './console_utils';
-import { userCommand } from './userCommand';
+import { userCommand } from './user_command';
 
 const term = new Terminal();
 const fitAddon = new FitAddon();

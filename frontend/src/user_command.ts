@@ -5,10 +5,10 @@ function printable(e: string) {
 }
 
 class Command {
-  constructor(public readonly command: string) { }
+  constructor(public readonly command: string, public readonly user_entered: boolean) { }
 }
 
-export async function userCommand(term: Terminal): Promise<Command> {
+export async function userCommand(term: Terminal, options?: {hideInput?: boolean}): Promise<Command> {
   let command: string = "";
 
   // Create a promise which we can resolve later in the onData handler
@@ -22,18 +22,18 @@ export async function userCommand(term: Terminal): Promise<Command> {
     switch (e) {
       case '\r': // Enter
         term.writeln("");
-        resolveCommandPromise(new Command(command));
+        resolveCommandPromise(new Command(command, true));
         break;
       case '\u000C': // Ctrl+L - Clear screen
-        resolveCommandPromise(new Command("clear"));
+        resolveCommandPromise(new Command("clear", false));
         break;
       case '\u0003': // Ctrl+C - Abort this prompt
         term.writeln('^C');
-        resolveCommandPromise(new Command(""));
+        resolveCommandPromise(new Command("", false));
         break;
       case '\u0004': // Ctrl+D - End-of-file - Exit this prompt
         term.writeln('^D');
-        return new Command("quit");
+        return new Command("quit", false);
       case '\u007f': // Backspace
         if (command.length <= 0) {
           break;
@@ -53,7 +53,11 @@ export async function userCommand(term: Terminal): Promise<Command> {
         if (!printable(e)) {
           break;
         }
-        term.write(e);
+        if (options?.hideInput?? false) {
+          term.write("*");
+        } else {
+          term.write(e);
+        }
         command += e;
         break;
     }

@@ -7,7 +7,7 @@ const UNAUTHORIZED = 401;
 
 type Token = string;
 
-async function getToken(username: string, password: string): Promise<Token> {
+export async function getToken(username: string, password: string): Promise<Token> {
     const response: any = await fetch(auth_endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -17,6 +17,7 @@ async function getToken(username: string, password: string): Promise<Token> {
     if (response.status === UNAUTHORIZED) {
         throw new Error("Unauthorized");
     }
+
     const token = await response.json();
     return token.token;    
 }
