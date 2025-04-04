@@ -7,6 +7,7 @@ import { split } from 'shlex';
 import colors from 'ansicolor'
 import { dispatch } from './commands';
 import { error } from './console_utils';
+import { userCommand } from './userCommand';
 
 const term = new Terminal();
 const fitAddon = new FitAddon();
@@ -17,35 +18,6 @@ term.open(document.getElementById('xterm-container')!);
 fitAddon.fit();
 
 window.addEventListener("resize", e => { fitAddon.fit(); });
-
-let command = "";
-let last_status = 0;
-
-function prompt() {
-  if (last_status == 0) {
-    term.write(colors.lightGreen(" $ "));
-  } else {
-    term.write(colors.lightRed(" $ "));
-  }
-  command = "";
-}
-
-async function handleCommand(command: string) {
-  let args: string[] = [];
-
-  try {
-    args = split(command);
-  } catch (e) {
-    error(term, `${e}`);
-  }
-
-  const arg0 = args[0];
-
-  //term.writeln("");
-  //term.writeln(`${bgLightGreen(black("Executing command"))}: ${arg0}`);
-
-  last_status = await dispatch(term, args);
-}
 
 export function init() {
   term.reset();
@@ -66,60 +38,33 @@ export function init() {
   term.writeln("  type: "  + colors.lightGreen(colors.italic("help")) +" for list of commands")
 }
 
-function printable(e: string) {
-  return (e >= String.fromCharCode(0x20) && e <= String.fromCharCode(0x7E) || e >= '\u00a0');
+let last_status = 0;
+
+function prompt() {
+  if (last_status == 0) {
+    term.write(colors.lightGreen(" $ "));
+  } else {
+    term.write(colors.lightRed(" $ "));
+  }
 }
 
-let currentCommandPromise = Promise.resolve();
-let currentCommandFinished = true;
-term.onData(e => {
+async function main() {
+  init();
+  while (true) {
+    prompt();
 
-    if (!currentCommandFinished) {
-       return;
+    const command = await userCommand(term);
+
+    let args: string[] = [];
+
+    try {
+      args = split(command.command);
+    } catch (e) {
+      error(term, `${e}`);
     }
 
-    switch (e) {
-      case '\r':
-          term.writeln("");
-          currentCommandPromise = handleCommand(command);
-          currentCommandFinished = false;
-          currentCommandPromise.catch(err => {
-            error(term, `${err}`);
-          }).finally(() => {
-            currentCommandFinished = true; 
-            prompt();
-          });
-          break;
-      case '\u000C': // Ctrl+L
-          init();
-          break;
-      case '\u0003': // Ctrl+C
-          term.write('^C');
-          break;
-      case '\u007f': // Backspace
-          if (command.length <= 0) {
-            break;
-          }
-          command = command.slice(0, command.length-1);
+    await dispatch(term, args);
+  }
+}
 
-          // move cursor back
-          term.write("\b");
-
-          // overwrite with space
-          term.write(" ");
-
-          // move back oncemore to let user continue typing
-          term.write("\b");
-          break;
-      default:
-          if (!printable(e)) {
-            break;
-          }
-          term.write(e);
-          command += e;
-          break;
-    }
-});
-
-init();
-prompt();
+main();

@@ -46,9 +46,7 @@ commands = {
 export async function dispatch(term: Terminal, args: string[]): Promise<number> {
     let err = false;
     if (args.length == 0){
-        error(term, "no command specified. using 'help'");
-        args = ["help"];
-        err = true;
+        return 0;
     }
 
     const arg0 = args[0];
