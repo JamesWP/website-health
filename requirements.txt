@@ -13,8 +13,10 @@ cron-descriptor==1.4.5
 Django==5.1.6
 django-celery-beat==2.7.0
 django-timezone-field==7.1
+djangorestframework==3.16.0
 humanize==4.12.1
 idna==3.10
+inflection==0.5.1
 kombu==5.4.2
 mypy-extensions==1.0.0
 packaging==24.2

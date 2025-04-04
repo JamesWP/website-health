@@ -24,8 +24,6 @@ class Website(models.Model):
     def is_up(self):
         return self.status == "UP"
 
-
-
 class WebsiteStatusEvent(models.Model):
 
     website = models.ForeignKey(Website, on_delete=models.CASCADE)
