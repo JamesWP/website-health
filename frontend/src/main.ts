@@ -30,7 +30,7 @@ function prompt() {
   command = "";
 }
 
-function handleCommand(command: string) {
+async function handleCommand(command: string) {
   let args: string[] = [];
 
   try {
@@ -44,7 +44,7 @@ function handleCommand(command: string) {
   //term.writeln("");
   //term.writeln(`${bgLightGreen(black("Executing command"))}: ${arg0}`);
 
-  last_status = dispatch(term, args);
+  last_status = await dispatch(term, args);
 }
 
 export function init() {
@@ -70,12 +70,25 @@ function printable(e: string) {
   return (e >= String.fromCharCode(0x20) && e <= String.fromCharCode(0x7E) || e >= '\u00a0');
 }
 
+let currentCommandPromise = Promise.resolve();
+let currentCommandFinished = true;
 term.onData(e => {
+
+    if (!currentCommandFinished) {
+       return;
+    }
+
     switch (e) {
       case '\r':
           term.writeln("");
-          handleCommand(command);
-          prompt();
+          currentCommandPromise = handleCommand(command);
+          currentCommandFinished = false;
+          currentCommandPromise.catch(err => {
+            error(term, `${err}`);
+          }).finally(() => {
+            currentCommandFinished = true; 
+            prompt();
+          });
           break;
       case '\u000C': // Ctrl+L
           init();
