@@ -67,7 +67,9 @@ async function websites(term: Terminal, arg0: string, args: string[]): Promise<n
     for (const website of websites) {
         term.writeln("→ " + color.blue("Name:                ") + website.name);
         term.writeln(color.green("\tUrl:           ") + website.url);
-        term.writeln(color.green("\tDate-Added:    ") + website.date_added);
+        term.writeln(color.green("\tDate-Added:    ") + website.added_date + " (" + moment(website.added_date).fromNow() + ")");
+        term.writeln(color.green("\tLast-Changed:  ") + moment(website.last_status_change).fromNow());
+    
         const s = "\tStatus:        ";
         switch (website.status) {
             case "UP":
