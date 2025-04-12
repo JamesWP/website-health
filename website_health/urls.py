@@ -24,7 +24,7 @@ from checker import views
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
-router.register(r'websites', views.WebstiteViewSet)
+router.register(r'websites', views.WebsiteViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

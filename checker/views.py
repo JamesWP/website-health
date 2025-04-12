@@ -23,7 +23,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class WebstiteViewSet(viewsets.ModelViewSet):
+class WebsiteViewSet(viewsets.ModelViewSet):
     queryset = Website.objects.all()
     serializer_class = WebsiteSerializer
     permission_classes = [permissions.IsAuthenticated]
